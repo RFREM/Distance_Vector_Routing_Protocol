@@ -9,3 +9,6 @@ subprocess.call('start DVR_C4.py', shell=True)
 
 hostname=socket.gethostname()   
 IPAddrGET=socket.gethostbyname(hostname) 
+
+ServerName = (hostname)
+SERVER_ADDR = (IPAddrGET, 4545)

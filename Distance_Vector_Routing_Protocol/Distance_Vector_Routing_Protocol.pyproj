@@ -23,6 +23,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Distance_Vector_Routing_Protocol.py" />
+    <Compile Include="DVR_C1.py" />
+    <Compile Include="DVR_C2.py" />
+    <Compile Include="DVR_C3.py" />
+    <Compile Include="DVR_C4.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
