@@ -7,10 +7,11 @@
     <StartupFile>Distance_Vector_Routing_Protocol.py</StartupFile>
     <SearchPath>
     </SearchPath>
-    <WorkingDirectory>.</WorkingDirectory>
+    <WorkingDirectory>C:\Users\ralph\source\repos\Distance_Vector_Routing_Protocol\Distance_Vector_Routing_Protocol</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Distance_Vector_Routing_Protocol</Name>
     <RootNamespace>Distance_Vector_Routing_Protocol</RootNamespace>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
