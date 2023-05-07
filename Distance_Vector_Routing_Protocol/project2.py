@@ -18,6 +18,7 @@ def SendCrash():
         "operation": "crash",
         "server_id": myserverId
     }
+
     try:
         for server in serverList:
             if server.id == myserverId:
@@ -38,6 +39,7 @@ def sendRoutingTableToNeighbor(ipAddressOfNeighbor, portOfNeighbor):
             if serverList[i].id == myserverId:
                 json_dict["rt"] = serverList[i].routingTable
                 break
+   
     except Exception as e:
         print("JSON Object Error")
         print(e)
@@ -48,39 +50,39 @@ def sendRoutingTableToNeighbor(ipAddressOfNeighbor, portOfNeighbor):
         s.connect((ip, portOfNeighbor))
         s.sendall(json.dumps(json_dict).encode())
         s.close()
+    
     except Exception as e:
         print("Connection failed...")
         print(e)
 
-def createRoutingTable(serverList):
-    for i in range(len(serverList)):
-        serverList[i].routingTable = [[9999 for j in range(len(serverList)+numDisabledServers)] for k in range(len(serverList)+numDisabledServers)]
-        if serverList[i].id == myserverId:
-            for j in range(len(serverList[i].routingTable)):
-                if j == myserverId - 1:
-                    serverList[i].routingTable[j][j] = 0
-                else:
+    def createRoutingTable(serverList):
+        for i in range(len(serverList)):
+            serverList[i].routingTable = [[9999 for j in range(len(serverList)+numDisabledServers)] for k in range(len(serverList)+numDisabledServers)]
+            if serverList[i].id == myserverId:
+                for j in range(len(serverList[i].routingTable)):
+                    if j == myserverId - 1:
+                        serverList[i].routingTable[j][j] = 0
+                    else:
+                        serverList[i].routingTable[j][j] = 9999
+            else:
+                for j in range(len(serverList[i].routingTable)):
                     serverList[i].routingTable[j][j] = 9999
-        else:
-            for j in range(len(serverList[i].routingTable)):
-                serverList[i].routingTable[j][j] = 9999
 
-    # iterate through id and costs of neighboring servers to assign their respective link costs to current server
-    for i in range(len(serverList)):
-        if serverList[i].id == myserverId:
-            for j in range(len(serverList[i].routingTable)):
-                if j + 1 == myserverId:
-                    for key, value in serverList[i].neighborsIdAndCost.items():
-                        serverList[i].routingTable[j][key - 1] = value
-                    break
-            break
-    return serverList
-
+        # iterate through id and costs of neighboring servers to assign their respective link costs to current server
+        for i in range(len(serverList)):
+            if serverList[i].id == myserverId:
+                for j in range(len(serverList[i].routingTable)):
+                    if j + 1 == myserverId:
+                        for key, value in serverList[i].neighborsIdAndCost.items():
+                            serverList[i].routingTable[j][key - 1] = value
+                        break
+                break
+        return serverList
 
 class Connection:
     def __init__(self, socket):
         self.clientSocket = socket
-    
+
     # read messages from other servers
     def run(self):
         while True:
@@ -98,6 +100,7 @@ class Connection:
                 newCost = receivedMSG.get("cost")
                 update_server_id_1 = int(receivedMSG.get("update_server_id_1"))
                 update_server_id_2 = int(receivedMSG.get("update_server_id_2"))
+ 
                 if newCost == "inf":
                     self.topFileRoutingTable[update_server_id_2-1][update_server_id_1-1] = 9999
                 else:
@@ -109,17 +112,20 @@ class Connection:
                                 self.serverList[x].routingTable[i][j] = self.topFileRoutingTable[i][j]
                         break
                 self.updateRoutingTable(self.serverList, self.topFileRoutingTable)
+ 
             elif operation == "disable":
                 disable_server_id = int(receivedMSG.get("disable_server_id"))
                 if disable_server_id == self.myServerId:
                     print("Link to given server is closed...")
                     exit(0)
+ 
                 for i in range(len(self.topFileRoutingTable)):
                     for j in range(len(self.topFileRoutingTable[i])):
                         if j == (disable_server_id-1):
                             continue
                         self.topFileRoutingTable[j][disable_server_id-1] = 9999
                         self.topFileRoutingTable[disable_server_id-1][j] = 9999 
+ 
                 for x in range(len(self.serverList)):
                     if self.serverList[x].id == self.myServerId:
                         self.serverList[x].neighborsIdAndCost.pop(disable_server_id, None)
@@ -139,21 +145,26 @@ class Connection(threading.Thread):
             line = self.client_socket.recv(1024).decode()
             if not line:
                 return
+
             received_msg = json.loads(line)
             operation = received_msg["operation"]
             sender_id = received_msg["sender_id"]
+
             if operation == "step":
                 print(f"Received a message from server {sender_id}\n")
                 self.handle_step(received_msg)
+
             elif operation == "update":
                 print(f"Received a message from server {sender_id}\n")
                 new_cost = received_msg["cost"]
                 server1 = int(received_msg["update_server_id_1"])
                 server2 = int(received_msg["update_server_id_2"])
+
                 if new_cost.lower() == "inf":
                     top_file_routing_table[server2-1][server1-1] = 9999
                 else:
                     top_file_routing_table[server2-1][server1-1] = int(new_cost)
+
                 for server in server_list:
                     if server.id == my_server_id:
                         for i in range(len(top_file_routing_table)):
@@ -161,17 +172,20 @@ class Connection(threading.Thread):
                                 server.routing_table[i][j] = top_file_routing_table[i][j]
                         break
                 self.update_routing_table(server_list, top_file_routing_table)
+
             elif operation == "disable":
                 disable_server_id = int(received_msg["disable_server_id"])
                 if disable_server_id == my_server_id:
                     print("Link to given server is closed...")
                     return
+
                 for i in range(len(top_file_routing_table)):
                     for j in range(len(top_file_routing_table[i])):
                         if j == disable_server_id - 1:
                             continue
                         top_file_routing_table[j][disable_server_id-1] = 9999
                         top_file_routing_table[disable_server_id-1][j] = 9999 
+
                 for server in server_list:
                     if server.id == my_server_id:
                         server.neighbors_id_and_cost.pop(disable_server_id, None)
@@ -179,10 +193,12 @@ class Connection(threading.Thread):
                             for j in range(len(top_file_routing_table[i])):
                                 server.routing_table[i][j] = top_file_routing_table[i][j]
                         break
+
                 server_list.pop(disable_server_id-1)
                 hashtag_next.pop(disable_server_id, None)
                 num_disabled_servers += 1
                 num_packets += 1
+
             elif operation == "crash":
                 crash_id = int(received_msg["server_id"])
                 print(f"Server {crash_id} has crashed. Updating routing table..")
@@ -192,6 +208,7 @@ class Connection(threading.Thread):
                             continue
                         top_file_routing_table[j][crash_id-1] = 9999
                         top_file_routing_table[crash_id-1][j] = 9999
+
                 for server in server_list:
                     if server.id == my_server_id:
                         server.neighbors_id_and_cost.pop(crash_id, None)
@@ -199,26 +216,31 @@ class Connection(threading.Thread):
                             for j in range(len(top_file_routing_table[i])):
                                 server.routing_table[i][j] = top_file_routing_table[i][j]
                         break
+
                 server_list.pop(crash_id-1)
                 hashtag_next.pop(crash_id, None)
                 num_disabled_servers
-
 
 def run():
     # create a socket and bind it to the port
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('localhost', myPort))
+
     # loop until a termination signal is received
     while True:
         try:
             # receive data from the socket
             data, address = sock.recvfrom(1024)
+
             # decode the data
             decodedData = data.decode('utf-8')
+
             # parse the received message as JSON
             receivedMSG = json.loads(decodedData)
+
             # handle different message types
             messageType = receivedMSG['type']
+
             if messageType == 'routing':
                 # update routing table
                 senderID = int(receivedMSG['sender_id'])
@@ -232,6 +254,7 @@ def run():
                                 topFileRoutingTable[myServerId-1][i] = topFileRoutingTable[senderID-1][i] + cost
                 # increment the number of received packets
                 numPackets += 1
+
             else:
                 if messageType == 'disable':
                     # disable server
