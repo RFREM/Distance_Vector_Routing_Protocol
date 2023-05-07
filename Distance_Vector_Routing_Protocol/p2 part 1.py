@@ -411,14 +411,15 @@ class DistanceVectorRouting:
     def SendCrash(self):
         infoObj = {
             "operation": "crash",
-            "server_id": self.myserverId
+            "server_id": self.myServerId
             #B&R: passing self into function for myserverid
         }
 
         try:
             for server in self.serverList:
                  #B&R: added self
-                if server.id == myserverId:
+                if server.id == self.myServerId:
+                    #B&R: added self 
                     continue
                 ip = socket.gethostbyname(server.ipAddress)
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -427,16 +428,17 @@ class DistanceVectorRouting:
         except:
             print("Connection failed...")
 
-    def sendRoutingTableToNeighbor(ipAddressOfNeighbor, portOfNeighbor):
+    def sendRoutingTableToNeighbor(self, ipAddressOfNeighbor, portOfNeighbor):
+        #B&R: Added self
         json_dict = {}
         try:
             json_dict["operation"] = "step"
-            json_dict["sender_id"] = myserverId
-            for i in range(len(serverList)):
-                if serverList[i].id == myserverId:
-                    json_dict["rt"] = serverList[i].routingTable
+            json_dict["sender_id"] = self.myServerId
+            for i in range(len(self.serverList)):
+                if self.serverList[i].id == self.myServerId:
+                    json_dict["rt"] = self.serverList[i].routingTable
                     break
-    
+            #B&R: added all selfs
         except Exception as e:
             print("JSON Object Error")
             print(e)
@@ -452,12 +454,15 @@ class DistanceVectorRouting:
             print("Connection failed...")
             print(e)
 
-        def createRoutingTable(serverList):
+        def createRoutingTable(self, serverList):
+            #B&R: added self
             for i in range(len(serverList)):
                 serverList[i].routingTable = [[9999 for j in range(len(serverList)+numDisabledServers)] for k in range(len(serverList)+numDisabledServers)]
-                if serverList[i].id == myserverId:
+                if serverList[i].id == self.myServerId:
+                    #B&R: added self
                     for j in range(len(serverList[i].routingTable)):
-                        if j == myserverId - 1:
+                        if j == self.myServerId - 1:
+                             #B&R: added self
                             serverList[i].routingTable[j][j] = 0
                         else:
                             serverList[i].routingTable[j][j] = 9999
@@ -466,10 +471,13 @@ class DistanceVectorRouting:
                         serverList[i].routingTable[j][j] = 9999
 
             # iterate through id and costs of neighboring servers to assign their respective link costs to current server
-            for i in range(len(serverList)):
-                if serverList[i].id == myserverId:
+            for i in range(len(self, serverList)):
+                 #B&R: added self
+                if serverList[i].id == self.myServerId:
+                     #B&R: added self
                     for j in range(len(serverList[i].routingTable)):
-                        if j + 1 == myserverId:
+                        if j + 1 == self.myServerId:
+                             #B&R: added self
                             for key, value in serverList[i].neighborsIdAndCost.items():
                                 serverList[i].routingTable[j][key - 1] = value
                             break
@@ -563,7 +571,8 @@ class DistanceVectorRouting:
                         top_file_routing_table[server2-1][server1-1] = int(new_cost)
 
                     for server in serverList:
-                        if server.id == myServerId:
+                        if server.id == self.myServerId:
+                             #B&R: added self
                             for i in range(len(top_file_routing_table)):
                                 for j in range(len(top_file_routing_table)):
                                     server.routing_table[i][j] = top_file_routing_table[i][j]
@@ -572,7 +581,8 @@ class DistanceVectorRouting:
 
                 elif operation == "disable":
                     disable_server_id = int(received_msg["disable_server_id"])
-                    if disable_server_id == myServerId:
+                    if disable_server_id == self.myServerId:
+                         #B&R: added self
                         print("Link to given server is closed...")
                         return
 
@@ -584,7 +594,8 @@ class DistanceVectorRouting:
                             top_file_routing_table[disable_server_id-1][j] = 9999 
 
                     for server in serverList:
-                        if server.id == myServerId:
+                        if server.id == self.myServerId:
+                             #B&R: added self
                             server.neighbors_id_and_cost.pop(disable_server_id, None)
                             for i in range(len(top_file_routing_table)):
                                 for j in range(len(top_file_routing_table[i])):
@@ -607,7 +618,8 @@ class DistanceVectorRouting:
                             top_file_routing_table[crash_id-1][j] = 9999
 
                     for server in serverList:
-                        if server.id == myServerId:
+                        if server.id == self.myServerId:
+                             #B&R: added self
                             server.neighbors_id_and_cost.pop(crash_id, None)
                             for i in range(len(top_file_routing_table)):
                                 for j in range(len(top_file_routing_table[i])):
@@ -618,7 +630,8 @@ class DistanceVectorRouting:
                     hashtag_next.pop(crash_id, None)
                     numDisabledServers
 
-    def run():
+    def run(self):
+         #B&R: added self
         # create a socket and bind it to the port
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('localhost', myPort))
@@ -643,12 +656,15 @@ class DistanceVectorRouting:
                     senderID = int(receivedMSG['sender_id'])
                     cost = int(receivedMSG['cost'])
                     for i in range(len(topFileRoutingTable)):
-                        if i != myServerId-1:
+                        if i != self.myServerId-1:
+                             #B&R: added self
                             if i == senderID-1:
                                 topFileRoutingTable[i][senderID-1] = cost
                             else:
-                                if (topFileRoutingTable[senderID-1][i] + cost) < topFileRoutingTable[myServerId-1][i]:
-                                    topFileRoutingTable[myServerId-1][i] = topFileRoutingTable[senderID-1][i] + cost
+                                if (topFileRoutingTable[senderID-1][i] + cost) < topFileRoutingTable[self.myServerId-1][i]:
+                                     #B&R: added self
+                                    topFileRoutingTable[self.myServerId-1][i] = topFileRoutingTable[senderID-1][i] + cost
+                                     #B&R: added self
                     # increment the number of received packets
                     numPackets += 1
 
@@ -670,7 +686,8 @@ class DistanceVectorRouting:
                             topFileRoutingTable[i][crashId-1] = 9999
                             topFileRoutingTable[crashId-1][i] = 9999
                         for server in serverList:
-                            if server.id == myServerId:
+                            if server.id == self.myServerId:
+                                 #B&R: added self
                                 server.neighborsIdAndCost.pop(crashId)
                                 for i in range(len(topFileRoutingTable)):
                                     for j in range(len(topFileRoutingTable[i])):
@@ -683,9 +700,11 @@ class DistanceVectorRouting:
             except socket.error:
                 print('Connection to a server has failed')
 
-    def step(serverList):
+    def step(self, serverList):
+         #B&R: added self
         for server in serverList:
-            if server.id == myServerId:
+            if server.id == self.myServerId:
+                 #B&R: added self
                 for neighbor, cost in server.neighborsIdAndCost.items():
                     ipAddressOfNeighbor = ""
                     portOfNeighbor = 0
@@ -699,13 +718,14 @@ class DistanceVectorRouting:
                     except:
                         pass
                 break
-    def updateRoutingTable(serverList, nrt):
+    def updateRoutingTable(self, serverList, nrt):
         myOriginalRoutingTable = [[0 for i in range(len(serverList) + numDisabledServers)] for j in range(len(serverList) + numDisabledServers)]
         myNewRoutingTable = [[0 for i in range(len(serverList) + numDisabledServers)] for j in range(len(serverList) + numDisabledServers)]
 
         i = 0
         for i in range(len(serverList)):
-            if serverList[i].getId() == myServerId:
+            if serverList[i].getId() == self.myServerId:
+                 #B&R: added self
                 for j in range(len(serverList[i].routingTable)):
                     for k in range(len(serverList[i].routingTable[j])):
                         itr = iter(serverList[i].neighborsIdAndCost.items())
@@ -730,7 +750,8 @@ class DistanceVectorRouting:
                                         myNewRoutingTable[j][k] = nrt[j][k]
 
                         for j in range(len(myNewRoutingTable)):
-                            if j + 1 == myServerId:
+                            if j + 1 == self.myServerId:
+                                 #B&R: added self
                                 hop = 0
                                 for k in range(len(myNewRoutingTable[j])):
                                     hop += 1
