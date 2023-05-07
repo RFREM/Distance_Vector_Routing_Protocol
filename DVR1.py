@@ -133,7 +133,7 @@ class DistanceVectorRouting:
                 
                 # Read the topology file and set up the routing table
                 self.serverList = self.read_top_file(command_split[2], self.serverList)
-                self.serverList = self.createRoutingTable(self.serverList)
+                self.serverList = self.createRoutingTable(self)
 
                 self.update_interval = self.update_interval * 1000
                 
@@ -507,36 +507,36 @@ class DistanceVectorRouting:
             print("Connection failed...")
             print(e)
 
-        def createRoutingTable(self):
-            #B&R: added self, removed serverlist
-            for i in range(len(self.serverList)):
-                self.serverList[i].routingTable = [[9999 for j in range(len(self.serverList)+self.numDisabledServers)] for k in range(len(self.serverList)+self.numDisabledServers)]
-                #B&R: added self to numDisabledServers
-                if self.serverList[i].id == self.myServerId:
-                    #B&R: added self
-                    for j in range(len(self.serverList[i].routingTable)):
-                        if j == self.myServerId - 1:
-                             #B&R: added self
-                            self.serverList[i].routingTable[j][j] = 0
-                        else:
-                            self.serverList[i].routingTable[j][j] = 9999
-                else:
-                    for j in range(len(self.serverList[i].routingTable)):
+    def createRoutingTable(self):
+        #B&R: added self, removed serverlist
+        for i in range(len(self.serverList)):
+            self.serverList[i].routingTable = [[9999 for j in range(len(self.serverList)+self.numDisabledServers)] for k in range(len(self.serverList)+self.numDisabledServers)]
+            #B&R: added self to numDisabledServers
+            if self.serverList[i].id == self.myServerId:
+                #B&R: added self
+                for j in range(len(self.serverList[i].routingTable)):
+                    if j == self.myServerId - 1:
+                            #B&R: added self
+                        self.serverList[i].routingTable[j][j] = 0
+                    else:
                         self.serverList[i].routingTable[j][j] = 9999
+            else:
+                for j in range(len(self.serverList[i].routingTable)):
+                    self.serverList[i].routingTable[j][j] = 9999
 
-            # iterate through id and costs of neighboring servers to assign their respective link costs to current server
-            for i in range(len(self, self.serverList)):
-                 #B&R: added self
-                if self.serverList[i].id == self.myServerId:
-                     #B&R: added self
-                    for j in range(len(self.serverList[i].routingTable)):
-                        if j + 1 == self.myServerId:
-                             #B&R: added self
-                            for key, value in self.serverList[i].neighborsIdAndCost.items():
-                                self.serverList[i].routingTable[j][key - 1] = value
-                            break
-                    break
-            return self.serverList
+        # iterate through id and costs of neighboring servers to assign their respective link costs to current server
+        for i in range(len(self, self.serverList)):
+                #B&R: added self
+            if self.serverList[i].id == self.myServerId:
+                    #B&R: added self
+                for j in range(len(self.serverList[i].routingTable)):
+                    if j + 1 == self.myServerId:
+                            #B&R: added self
+                        for key, value in self.serverList[i].neighborsIdAndCost.items():
+                            self.serverList[i].routingTable[j][key - 1] = value
+                        break
+                break
+        return self.serverList
 
     class Connection:
         def __init__(self, socket):
