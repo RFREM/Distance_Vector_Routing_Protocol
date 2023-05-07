@@ -127,8 +127,6 @@ class Connection:
                             for j in range(len(self.topFileRoutingTable[i])):
                                 self.serverList[x].routingTable[i][j] = self.topFileRoutingTable[i][j]
                         break
-import json
-import threading
 
 class Connection(threading.Thread):
     def __init__(self, client_socket):
