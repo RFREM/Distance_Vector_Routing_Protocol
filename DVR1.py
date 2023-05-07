@@ -7,6 +7,7 @@ import json
 
 
 class ServerInfo:
+
     def __init__(self):
         self.id = None
         self.ip_address = None
@@ -188,7 +189,7 @@ class DistanceVectorRouting:
                     total_servers_count = int(line.strip())
                 else:
                     # Raise an exception if the file is not formatted correctly
-                    raise Exception("Topology File Not Correctly Formatted!")
+                    raise Exception("1: Topology File Not Correctly Formatted!")
                 
                 # Read the second line of the topology file
                 line = my_reader.readline()
@@ -196,7 +197,7 @@ class DistanceVectorRouting:
                     # set the total number of neighbors for this server
                     num_neighbors = int(line.strip())
                 else:
-                    raise Exception("Topology File Not Correctly Formatted!")
+                    raise Exception("2: Topology File Not Correctly Formatted!")
 
                 # Loop through the server list and add the server information to the list
                 for i in range(total_servers_count):
@@ -204,7 +205,7 @@ class DistanceVectorRouting:
                     if line:
                         command_split = line.split(" ")
                         if len(command_split) != 3:
-                            raise Exception("Topology File Not Correctly Formatted!")
+                            raise Exception("3:Topology File Not Correctly Formatted!")
                         else:
                             new_serv = ServerInfo() # create new server object
                             new_serv.set_id(int(command_split[0])) # set server ID
@@ -213,7 +214,7 @@ class DistanceVectorRouting:
                             new_serv.set_no_of_packets_received(0) # initialize number of packets received to 0
                             serverList.append(new_serv) # add new server object to server list
                     else:
-                        raise Exception("Topology File Not Correctly Formatted!")
+                        raise Exception("4: Topology File Not Correctly Formatted!")
                     
                 # Loop through neighbors and add them to the list of neighbors for this server
                 for i in range(num_neighbors):
@@ -221,7 +222,7 @@ class DistanceVectorRouting:
                     if line:
                         command_split = line.split(" ")
                         if len(command_split) != 3:
-                            raise Exception("Topology File Not Correctly Formatted!")
+                            raise Exception("5: Topology File Not Correctly Formatted!")
                         else:
                             # set my server ID to first item in line
                             self.myServerId = int(command_split[0])
@@ -230,7 +231,7 @@ class DistanceVectorRouting:
                             # Set the hashtagNext dictionary
                             self.hashtagNext[int(command_split[1])] = int(command_split[1])
                     else:
-                        raise Exception("Topology File Not Correctly Formatted!")
+                        raise Exception("6: Topology File Not Correctly Formatted!")
 
                 # Find the server in the server list 
                 for i in range(len(serverList)):
@@ -796,3 +797,9 @@ class DistanceVectorRouting:
         self.step(self.serverList)
 
         return self.serverList
+    
+if __name__ == '__main__':
+
+    bob = DistanceVectorRouting()
+    
+    bob.start_up()
