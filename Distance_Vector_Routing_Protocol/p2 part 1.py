@@ -54,7 +54,8 @@ class ServerInfo:
         
 class DistanceVectorRouting:
     def __init__(self):
-        self.server_list = [] # A list of ServerInfo objects
+        self.serverList = [] # A list of ServerInfo objects
+        #B&R: Changed server_list to serverList
         self.top_file_routing_table = [] # 2D list for holding the routing table read from topology file
         self.update_interval = 1000 # The interval in milliseconds between updates to routing table
         self.myServerId = 0 # The ID of this server
@@ -88,8 +89,8 @@ class DistanceVectorRouting:
                     continue
                 
                 # Read the topology file and set up the routing table
-                self.server_list = self.read_top_file(command_split[2], self.server_list)
-                self.server_list = self.create_routing_table(self.server_list)
+                self.serverList = self.read_top_file(command_split[2], self.serverList)
+                self.serverList = self.create_routing_table(self.serverList)
 
                 self.update_interval = self.update_interval * 1000
                 
@@ -105,13 +106,13 @@ class DistanceVectorRouting:
                 timer.schedule(st, self.update_interval, self.update_interval)
 
                 # Set up the top_file_routing_table
-                self.top_file_routing_table = [[0 for i in range(len(self.server_list) + self.numDisabledServers)] for j in range(len(self.server_list) + self.numDisabledServers)]
+                self.top_file_routing_table = [[0 for i in range(len(self.serverList) + self.numDisabledServers)] for j in range(len(self.serverList) + self.numDisabledServers)]
 
-                for i in range(len(self.server_list)):
-                    if self.server_list[i].id == self.myServerId:
-                        for s in range(len(self.server_list[i].routing_table)):
-                            for t in range(len(self.server_list[i].routing_table[s])):
-                                self.top_file_routing_table[s][t] = self.server_list[i].routing_table[s][t]
+                for i in range(len(self.serverList)):
+                    if self.serverList[i].id == self.myServerId:
+                        for s in range(len(self.serverList[i].routing_table)):
+                            for t in range(len(self.serverList[i].routing_table[s])):
+                                self.top_file_routing_table[s][t] = self.serverList[i].routing_table[s][t]
                         break
 
                 print(f"{command} SUCCESS\n")
@@ -142,7 +143,7 @@ class DistanceVectorRouting:
                     self.update_link_cost_and_send(server_1, server_2, new_cost)
 
             elif command == "step":
-                self.step(self.server_list)
+                self.step(self.serverList)
                 print("STEP SUCCESS\n")
 
             elif command == "packets":
@@ -151,7 +152,7 @@ class DistanceVectorRouting:
 
             elif command == "display":
                 print()
-                self.display_route_table(self.server_list)
+                self.display_route_table(self.serverList)
                 print("\nDISPLAY SUCCESS\n")
 
             elif command == "disable":
@@ -159,7 +160,7 @@ class DistanceVectorRouting:
                     print("You cannot disable yourself")
                     continue
 
-                self.send_disable_to_server_list(int(command_split[1]))
+                self.send_disable_to_serverList(int(command_split[1]))
                 self.numDisabledServers += 1
                 print("\nDISPLAY SUCCESS\n")
             
@@ -169,7 +170,7 @@ class DistanceVectorRouting:
                 sys.exit(1)
 
     # This function reads a topology file which contains information about the servers in the network and their connections
-    def read_top_file(self, file_name, server_list):
+    def read_top_file(self, file_name, serverList):
         total_servers_count = 0 
         num_neighbors = 0
         new_neighbor_id_and_cost = {}
@@ -207,7 +208,7 @@ class DistanceVectorRouting:
                             new_serv.set_ip_address(command_split[1]) # set server IP address
                             new_serv.set_port(command_split[2]) # set server port
                             new_serv.set_no_of_packets_received(0) # initialize number of packets received to 0
-                            server_list.append(new_serv) # add new server object to server list
+                            serverList.append(new_serv) # add new server object to server list
                     else:
                         raise Exception("Topology File Not Correctly Formatted!")
                     
@@ -229,11 +230,11 @@ class DistanceVectorRouting:
                         raise Exception("Topology File Not Correctly Formatted!")
 
                 # Find the server in the server list 
-                for i in range(len(server_list)):
+                for i in range(len(serverList)):
                     # if it matches with this server's ID
-                    if server_list[i].id == self.myServerId:
+                    if serverList[i].id == self.myServerId:
                         # set its IP address and port
-                        self.my_port = server_list[i].port
+                        self.my_port = serverList[i].port
                         break
                 
                 # Get this server's IP address and create a server socket
@@ -246,37 +247,37 @@ class DistanceVectorRouting:
         except Exception as e:
                 print(e)
 
-        # For each server in the server_list
-        for i in range(len(server_list)):
+        # For each server in the serverList
+        for i in range(len(serverList)):
             # If the server is the current server
-            if server_list[i].get_id() == self.myServerId:
+            if serverList[i].get_id() == self.myServerId:
                 # Set the neighbors of this server with the new neighbor information
-                server_list[i].set_neighbors_id_and_cost(new_neighbor_id_and_cost)
+                serverList[i].set_neighbors_id_and_cost(new_neighbor_id_and_cost)
             else:
                 # Otherwise, set the neighbors of this server to an empty hash map
                 empty_hash_map = {}
                 empty_hash_map[0] = 0
-                server_list[i].set_neighbors_id_and_cost(empty_hash_map)
+                serverList[i].set_neighbors_id_and_cost(empty_hash_map)
         
         # Return the updated server list
-        return server_list
+        return serverList
 
     # This function prints out a routing table for the server
-    def display_route_table(self, server_list):
+    def display_route_table(self, serverList):
          # Print a heading for the routing table
         print("\nRouting Table is: ")
         print("\n(ID) (Next Hop) (Cost)")
         
         # Loop over each server in the server list
-        for i in range(len(server_list)):
+        for i in range(len(serverList)):
             # If this is the current server
-            if server_list[i].id == self.myServerId:
+            if serverList[i].id == self.myServerId:
                 # Loop over each possible destination server
-                for j in range(len(server_list)+self.numDisabledServers+1):
+                for j in range(len(serverList)+self.numDisabledServers+1):
                     # If we have a next hop for this destination
                     if self.hashtag_next.__contains__(j):
                         # Print out the destination ID, the next hop for this destination, and the cost of the path
-                        print("    " + str(j) + "\t   " + str(self.hashtag_next.get(j)) + "\t      " + str(server_list[i].routing_table[self.myServerId-1][j-1]))
+                        print("    " + str(j) + "\t   " + str(self.hashtag_next.get(j)) + "\t      " + str(serverList[i].routing_table[self.myServerId-1][j-1]))
                 # Exit the loop over servers
                 break
     
@@ -292,11 +293,11 @@ class DistanceVectorRouting:
 
         # updates the routing table of the current server based on the updated link cost 
         # It loops through the routing table and updates each value with the corresponding value in the top_file_routing_table
-        for x in range(len(self.server_list)):
-            if self.server_list[x].id == self.myServerId:
+        for x in range(len(self.serverList)):
+            if self.serverList[x].id == self.myServerId:
                 for i in range(len(self.top_file_routing_table)):
                     for j in range(len(self.top_file_routing_table[i])):
-                        self.server_list[x].routing_table[i][j] = self.top_file_routing_table[i][j]
+                        self.serverList[x].routing_table[i][j] = self.top_file_routing_table[i][j]
                 break
         
         json_dict = {}
@@ -314,20 +315,20 @@ class DistanceVectorRouting:
         
         # Send the update message to all the other servers in the network
         try:
-            for i in range(len(self.server_list)):
-                ip = socket.gethostbyname(self.server_list[i].ip_address)
+            for i in range(len(self.serverList)):
+                ip = socket.gethostbyname(self.serverList[i].ip_address)
                 s = socket.socket()
-                s.connect((ip, self.server_list[i].port))
+                s.connect((ip, self.serverList[i].port))
                 s.sendall(json.dumps(json_dict).encode())
         except Exception as e:
             print("Connection failed...")
         
         # update the routing table 
-        self.update_routing_table(self.server_list, self.top_file_routing_table)
+        self.update_routing_table(self.serverList, self.top_file_routing_table)
         # Call the step function to trigger the next iteration of the algorithm
-        self.step(self.server_list)
+        self.step(self.serverList)
 
-    def send_disable_to_server_list(self, dsid):
+    def send_disable_to_serverList(self, dsid):
         # Iterate over the entire routing table and update the entries where the disabled server is involved
         for i in range(len(self.top_file_routing_table)):
             for j in range(len(self.top_file_routing_table[i])):
@@ -337,12 +338,12 @@ class DistanceVectorRouting:
                 self.top_file_routing_table[dsid-1][j] = 9999
 
         # Update the routing table and remove the disabled server from the neighbor's list        
-        for x in range(len(self.server_list)):
-            if self.server_list[x].id == self.myServerId:
-                self.server_list[x].neighbors_id_and_cost.pop(dsid, None)
+        for x in range(len(self.serverList)):
+            if self.serverList[x].id == self.myServerId:
+                self.serverList[x].neighbors_id_and_cost.pop(dsid, None)
                 for i in range(len(self.top_file_routing_table)):
                     for j in range(len(self.top_file_routing_table[i])):
-                        self.server_list[x].routing_table[i][j] = self.top_file_routing_table[i][j]
+                        self.serverList[x].routing_table[i][j] = self.top_file_routing_table[i][j]
                 break
         
         json_dict = {}
@@ -357,21 +358,21 @@ class DistanceVectorRouting:
 
         # Send the disable message to all the other servers in the network
         try:
-            for i in range(len(self.server_list)):
-                if self.server_list[i].id == self.myServerId:
+            for i in range(len(self.serverList)):
+                if self.serverList[i].id == self.myServerId:
                     continue
-                ip = socket.gethostbyname(self.server_list[i].ip_address)
+                ip = socket.gethostbyname(self.serverList[i].ip_address)
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect((ip, self.server_list[i].port))
+                s.connect((ip, self.serverList[i].port))
                 s.sendall(json.dumps(json_dict).encode())
         except Exception as e:
             print("Connection failed...")
 
         # Remove the disabled server from the server list and from the hashtag_next dictionary
-        self.server_list.pop(dsid-1)
+        self.serverList.pop(dsid-1)
         self.hashtag_next.pop(dsid, None)
         # Call the step function to trigger the next iteration of the algorithm
-        self.step(self.server_list)
+        self.step(self.serverList)
 
     # This function dsplay the packets reveived by the server   
     def display_packets(self):
@@ -407,14 +408,16 @@ class DistanceVectorRouting:
         serverList = self.updateRoutingTable(serverList, newRT)
         return
 
-    def SendCrash():
+    def SendCrash(self):
         infoObj = {
             "operation": "crash",
-            "server_id": myserverId
+            "server_id": self.myserverId
+            #B&R: passing self into function for myserverid
         }
 
         try:
-            for server in serverList:
+            for server in self.serverList:
+                 #B&R: added self
                 if server.id == myserverId:
                     continue
                 ip = socket.gethostbyname(server.ipAddress)
@@ -559,13 +562,13 @@ class DistanceVectorRouting:
                     else:
                         top_file_routing_table[server2-1][server1-1] = int(new_cost)
 
-                    for server in server_list:
+                    for server in serverList:
                         if server.id == myServerId:
                             for i in range(len(top_file_routing_table)):
                                 for j in range(len(top_file_routing_table)):
                                     server.routing_table[i][j] = top_file_routing_table[i][j]
                             break
-                    self.update_routing_table(server_list, top_file_routing_table)
+                    self.update_routing_table(serverList, top_file_routing_table)
 
                 elif operation == "disable":
                     disable_server_id = int(received_msg["disable_server_id"])
@@ -580,7 +583,7 @@ class DistanceVectorRouting:
                             top_file_routing_table[j][disable_server_id-1] = 9999
                             top_file_routing_table[disable_server_id-1][j] = 9999 
 
-                    for server in server_list:
+                    for server in serverList:
                         if server.id == myServerId:
                             server.neighbors_id_and_cost.pop(disable_server_id, None)
                             for i in range(len(top_file_routing_table)):
@@ -588,7 +591,7 @@ class DistanceVectorRouting:
                                     server.routing_table[i][j] = top_file_routing_table[i][j]
                             break
 
-                    server_list.pop(disable_server_id-1)
+                    serverList.pop(disable_server_id-1)
                     hashtag_next.pop(disable_server_id, None)
                     numDisabledServers += 1
                     num_packets += 1
@@ -603,7 +606,7 @@ class DistanceVectorRouting:
                             top_file_routing_table[j][crash_id-1] = 9999
                             top_file_routing_table[crash_id-1][j] = 9999
 
-                    for server in server_list:
+                    for server in serverList:
                         if server.id == myServerId:
                             server.neighbors_id_and_cost.pop(crash_id, None)
                             for i in range(len(top_file_routing_table)):
@@ -611,7 +614,7 @@ class DistanceVectorRouting:
                                     server.routing_table[i][j] = top_file_routing_table[i][j]
                             break
 
-                    server_list.pop(crash_id-1)
+                    serverList.pop(crash_id-1)
                     hashtag_next.pop(crash_id, None)
                     numDisabledServers
 
