@@ -62,7 +62,8 @@ class DistanceVectorRouting:
         self.myServerId = 0 # The ID of this server
         #B&R: Changed my_server_id to myServerId
         self.my_port = 0 # The port of this server
-        self.hashtag_next = {} # Dictionary for holding the next hop information
+        self.hashtagNext = {} # Dictionary for holding the next hop information
+        #B&R: hashtag_next to hashtagNext
         self.my_ip = "" # The IP address of this server
         self.server_socket = None # The socket for this server
         self.numDisabledServers = 0 # The number of disabled servers
@@ -225,8 +226,8 @@ class DistanceVectorRouting:
                             self.myServerId = int(command_split[0])
                             # add the neighbor ID and cost to a dictionary
                             new_neighbor_id_and_cost[int(command_split[1])] = int(command_split[2])
-                            # Set the hashtag_next dictionary
-                            self.hashtag_next[int(command_split[1])] = int(command_split[1])
+                            # Set the hashtagNext dictionary
+                            self.hashtagNext[int(command_split[1])] = int(command_split[1])
                     else:
                         raise Exception("Topology File Not Correctly Formatted!")
 
@@ -276,9 +277,9 @@ class DistanceVectorRouting:
                 # Loop over each possible destination server
                 for j in range(len(serverList)+self.numDisabledServers+1):
                     # If we have a next hop for this destination
-                    if self.hashtag_next.__contains__(j):
+                    if self.hashtagNext.__contains__(j):
                         # Print out the destination ID, the next hop for this destination, and the cost of the path
-                        print("    " + str(j) + "\t   " + str(self.hashtag_next.get(j)) + "\t      " + str(serverList[i].routing_table[self.myServerId-1][j-1]))
+                        print("    " + str(j) + "\t   " + str(self.hashtagNext.get(j)) + "\t      " + str(serverList[i].routing_table[self.myServerId-1][j-1]))
                 # Exit the loop over servers
                 break
     
@@ -369,9 +370,9 @@ class DistanceVectorRouting:
         except Exception as e:
             print("Connection failed...")
 
-        # Remove the disabled server from the server list and from the hashtag_next dictionary
+        # Remove the disabled server from the server list and from the hashtagNext dictionary
         self.serverList.pop(dsid-1)
-        self.hashtag_next.pop(dsid, None)
+        self.hashtagNext.pop(dsid, None)
         # Call the step function to trigger the next iteration of the algorithm
         self.step(self.serverList)
 
@@ -473,7 +474,7 @@ class DistanceVectorRouting:
                         self.serverList[i].routingTable[j][j] = 9999
 
             # iterate through id and costs of neighboring servers to assign their respective link costs to current server
-            for i in range(len(self, serverList)):
+            for i in range(len(self, self.serverList)):
                  #B&R: added self
                 if self.serverList[i].id == self.myServerId:
                      #B&R: added self
@@ -605,7 +606,7 @@ class DistanceVectorRouting:
                             break
 
                     self.serverList.pop(disable_server_id-1)
-                    hashtag_next.pop(disable_server_id, None)
+                    self.hashtagNext.pop(disable_server_id, None)
                     self.numDisabledServers += 1
                     #B&R: added self to numDisabledServers
                     num_packets += 1
@@ -630,7 +631,7 @@ class DistanceVectorRouting:
                             break
 
                     self.serverList.pop(crash_id-1)
-                    hashtag_next.pop(crash_id, None)
+                    self.hashtagNext.pop(crash_id, None)
                     self.numDisabledServers
                     #B&R: added self to numDisabledServers
 
@@ -677,7 +678,7 @@ class DistanceVectorRouting:
                         # disable server
                         disable_serevr_id = int(receivedMSG['server_id'])
                         self.serverList.pop(disable_serevr_id-1)
-                        hashtagNext.pop(disable_serevr_id)
+                        self.hashtagNext.pop(disable_serevr_id)
                         self.numDisabledServers += 1
                         #B&R: added self to numDisabledServers
                         numPackets += 1
@@ -699,7 +700,7 @@ class DistanceVectorRouting:
                                         server.routingTable[i][j] = self.topFileRoutingTable[i][j]
                                 break
                         self.serverList.pop(crashId-1)
-                        hashtagNext.pop(crashId)
+                        self.hashtagNext.pop(crashId)
                         self.numDisabledServers += 1
                         #B&R: added self to numDisabledServers
                         numPackets += 1
@@ -773,7 +774,7 @@ class DistanceVectorRouting:
                                         for a in range(len(newCosts)):
                                             if minCost > newCosts[a]:
                                                 minCost = newCosts[a]
-                                                hashtagNext[hop] = neighbors[a]
+                                                self.hashtagNext[hop] = neighbors[a]
 
                                         myNewRoutingTable[j][k] = minCost
 
