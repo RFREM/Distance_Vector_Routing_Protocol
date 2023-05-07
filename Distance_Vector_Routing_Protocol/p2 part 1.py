@@ -5,7 +5,7 @@ from typing import List, Dict
 import threading
 import json
 
-# video doesn't show the ServerInfo class, just making assumptions
+
 class ServerInfo:
     def __init__(self):
         self.id = None
@@ -242,7 +242,7 @@ class DistanceVectorRouting:
                 self.bootup()
 
         except Exception as e:
-                print(str(e))
+                print(e)
 
         # For each server in the server_list
         for i in range(len(server_list)):
@@ -270,7 +270,7 @@ class DistanceVectorRouting:
             # If this is the current server
             if server_list[i].id == self.my_server_id:
                 # Loop over each possible destination server
-                for j in range(server_list.size()+self.num_disabled_servers+1):
+                for j in range(len(server_list)+self.num_disabled_servers+1):
                     # If we have a next hop for this destination
                     if self.hashtag_next.__contains__(j):
                         # Print out the destination ID, the next hop for this destination, and the cost of the path
@@ -281,7 +281,7 @@ class DistanceVectorRouting:
     # This fucntion updates the link cost between two servers, then send this update to all other servers
     def update_link_cost_and_send(self, server_1, server_2, new_cost):
         # If the new cost is infinite
-        if new_cost.lower() == "inf":
+        if new_cost == "inf".casefold():
             # the cost in the table is set to 9999
             self.top_file_routing_table[server_1-1][server_2-1] = 9999
         else:
@@ -297,14 +297,18 @@ class DistanceVectorRouting:
                         self.server_list[x].routing_table[i][j] = self.top_file_routing_table[i][j]
                 break
         
-        # creates a dictionary containing information about the update operation
-        infoObj = {
-            "operation": "update",
-            "update_server_id_1": server_1,
-            "update_server_id_2": server_2,
-            "cost": new_cost,
-            "sender_id": self.my_server_id
-        }
+        json_dict = {}
+        # creates a dictionary(json) store the update operation
+        try:
+            json_dict["operation"] = "update"
+            json_dict["update_server_id_1"] = server_1
+            json_dict["update_server_id_2"] = server_2
+            json_dict["cost"] = new_cost
+            json_dict["sender_id"] = self.my_server_id
+
+        except Exception as e:
+            print("Connection failed...")
+            print(e)
         
         # Send the update message to all the other servers in the network
         try:
@@ -312,9 +316,7 @@ class DistanceVectorRouting:
                 ip = socket.gethostbyname(self.server_list[i].ip_address)
                 s = socket.socket()
                 s.connect((ip, self.server_list[i].port))
-                dataOutputStream = s.makefile(mode='wb')
-                dataInputStream = s.makefile(mode='rb')
-                dataOutputStream.write(str(infoObj))
+                s.sendall(json.dumps(json_dict).encode())
         except Exception as e:
             print("Connection failed...")
         
@@ -341,11 +343,15 @@ class DistanceVectorRouting:
                         self.server_list[x].routing_table[i][j] = self.top_file_routing_table[i][j]
                 break
         
-        # creates a dictionary containing information about the disable operation
-        infoObj = {
-            "operation": "disable",
-            "disable_server_id": dsid
-        }
+        json_dict = {}
+        try:
+            # creates a dictionary(json) store disable operation
+            json_dict["operation"] = "disable"
+            json_dict["disable_server_id"] = dsid
+
+        except Exception as e:
+            print("Connection failed...")
+            print(e)
 
         # Send the disable message to all the other servers in the network
         try:
@@ -355,9 +361,7 @@ class DistanceVectorRouting:
                 ip = socket.gethostbyname(self.server_list[i].ip_address)
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((ip, self.server_list[i].port))
-                dataOutputStream = s.makefile('wb')
-                dataInputStream = s.makefile('rb')
-                dataOutputStream.write(str(infoObj))
+                s.sendall(json.dumps(json_dict).encode())
         except Exception as e:
             print("Connection failed...")
 
@@ -386,5 +390,3 @@ class DistanceVectorRouting:
 
         threading.Thread(target=connection_handler).start()
 
-if __name__ == "__main__":
-    DistanceVectorRouting.start_up(sys.argv)
