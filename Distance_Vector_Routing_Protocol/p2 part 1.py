@@ -397,16 +397,16 @@ class DistanceVectorRouting:
     ###########################################SECOND HALF##################################################
     def handleStep(self, json):
         #B&R: passing self into function for numdisabled erver, updaterouting, and myserverid
-        newRT = [[0 for i in range(len(serverList) + self.numDisabledServers)] for j in range(len(serverList) + self.numDisabledServers)]
+        newRT = [[0 for i in range(len(self.serverList) + self.numDisabledServers)] for j in range(len(self.serverList) + self.numDisabledServers)]
         arr = json.getJSONArray("rt")
         for i in range(len(arr)):
             innerArr = arr.get(i)
             for j in range(len(innerArr)):
                 newRT[i][j] = int(innerArr.get(j).toString())
-        for i in range(len(serverList)):
-            if serverList[i].id == self.myServerid:
+        for i in range(len(self.serverList)):
+            if self.serverList[i].id == self.myServerid:
                 break
-        serverList = self.updateRoutingTable(serverList, newRT)
+        serverList = self.updateRoutingTable(self.serverList, newRT)
         return
 
     def SendCrash(self):
@@ -455,36 +455,36 @@ class DistanceVectorRouting:
             print("Connection failed...")
             print(e)
 
-        def createRoutingTable(self, serverList):
-            #B&R: added self
-            for i in range(len(serverList)):
-                serverList[i].routingTable = [[9999 for j in range(len(serverList)+self.numDisabledServers)] for k in range(len(serverList)+self.numDisabledServers)]
+        def createRoutingTable(self):
+            #B&R: added self, removed serverlist
+            for i in range(len(self.serverList)):
+                self.serverList[i].routingTable = [[9999 for j in range(len(self.serverList)+self.numDisabledServers)] for k in range(len(self.serverList)+self.numDisabledServers)]
                 #B&R: added self to numDisabledServers
-                if serverList[i].id == self.myServerId:
+                if self.serverList[i].id == self.myServerId:
                     #B&R: added self
-                    for j in range(len(serverList[i].routingTable)):
+                    for j in range(len(self.serverList[i].routingTable)):
                         if j == self.myServerId - 1:
                              #B&R: added self
-                            serverList[i].routingTable[j][j] = 0
+                            self.serverList[i].routingTable[j][j] = 0
                         else:
-                            serverList[i].routingTable[j][j] = 9999
+                            self.serverList[i].routingTable[j][j] = 9999
                 else:
-                    for j in range(len(serverList[i].routingTable)):
-                        serverList[i].routingTable[j][j] = 9999
+                    for j in range(len(self.serverList[i].routingTable)):
+                        self.serverList[i].routingTable[j][j] = 9999
 
             # iterate through id and costs of neighboring servers to assign their respective link costs to current server
             for i in range(len(self, serverList)):
                  #B&R: added self
-                if serverList[i].id == self.myServerId:
+                if self.serverList[i].id == self.myServerId:
                      #B&R: added self
-                    for j in range(len(serverList[i].routingTable)):
+                    for j in range(len(self.serverList[i].routingTable)):
                         if j + 1 == self.myServerId:
                              #B&R: added self
-                            for key, value in serverList[i].neighborsIdAndCost.items():
-                                serverList[i].routingTable[j][key - 1] = value
+                            for key, value in self.serverList[i].neighborsIdAndCost.items():
+                                self.serverList[i].routingTable[j][key - 1] = value
                             break
                     break
-            return serverList
+            return self.serverList
 
     class Connection:
         def __init__(self, socket):
@@ -572,14 +572,14 @@ class DistanceVectorRouting:
                     else:
                         self.topFileRoutingTable[server2-1][server1-1] = int(new_cost)
 
-                    for server in serverList:
+                    for server in self.serverList:
                         if server.id == self.myServerId:
                              #B&R: added self
                             for i in range(len(self.topFileRoutingTable)):
                                 for j in range(len(self.topFileRoutingTable)):
                                     server.routing_table[i][j] = self.topFileRoutingTable[i][j]
                             break
-                    self.update_routing_table(serverList, self.topFileRoutingTable)
+                    self.update_routing_table(self.serverList, self.topFileRoutingTable)
 
                 elif operation == "disable":
                     disable_server_id = int(received_msg["disable_server_id"])
@@ -595,7 +595,7 @@ class DistanceVectorRouting:
                             self.topFileRoutingTable[j][disable_server_id-1] = 9999
                             self.topFileRoutingTable[disable_server_id-1][j] = 9999 
 
-                    for server in serverList:
+                    for server in self.serverList:
                         if server.id == self.myServerId:
                              #B&R: added self
                             server.neighbors_id_and_cost.pop(disable_server_id, None)
@@ -604,7 +604,7 @@ class DistanceVectorRouting:
                                     server.routing_table[i][j] = self.topFileRoutingTable[i][j]
                             break
 
-                    serverList.pop(disable_server_id-1)
+                    self.serverList.pop(disable_server_id-1)
                     hashtag_next.pop(disable_server_id, None)
                     self.numDisabledServers += 1
                     #B&R: added self to numDisabledServers
@@ -620,7 +620,7 @@ class DistanceVectorRouting:
                             self.topFileRoutingTable[j][crash_id-1] = 9999
                             self.topFileRoutingTable[crash_id-1][j] = 9999
 
-                    for server in serverList:
+                    for server in self.serverList:
                         if server.id == self.myServerId:
                              #B&R: added self
                             server.neighbors_id_and_cost.pop(crash_id, None)
@@ -629,7 +629,7 @@ class DistanceVectorRouting:
                                     server.routing_table[i][j] = self.topFileRoutingTable[i][j]
                             break
 
-                    serverList.pop(crash_id-1)
+                    self.serverList.pop(crash_id-1)
                     hashtag_next.pop(crash_id, None)
                     self.numDisabledServers
                     #B&R: added self to numDisabledServers
@@ -676,7 +676,7 @@ class DistanceVectorRouting:
                     if messageType == 'disable':
                         # disable server
                         disable_serevr_id = int(receivedMSG['server_id'])
-                        serverList.pop(disable_serevr_id-1)
+                        self.serverList.pop(disable_serevr_id-1)
                         hashtagNext.pop(disable_serevr_id)
                         self.numDisabledServers += 1
                         #B&R: added self to numDisabledServers
@@ -690,7 +690,7 @@ class DistanceVectorRouting:
                                 continue
                             self.topFileRoutingTable[i][crashId-1] = 9999
                             self.topFileRoutingTable[crashId-1][i] = 9999
-                        for server in serverList:
+                        for server in self.serverList:
                             if server.id == self.myServerId:
                                  #B&R: added self
                                 server.neighborsIdAndCost.pop(crashId)
@@ -698,7 +698,7 @@ class DistanceVectorRouting:
                                     for j in range(len(self.topFileRoutingTable[i])):
                                         server.routingTable[i][j] = self.topFileRoutingTable[i][j]
                                 break
-                        serverList.pop(crashId-1)
+                        self.serverList.pop(crashId-1)
                         hashtagNext.pop(crashId)
                         self.numDisabledServers += 1
                         #B&R: added self to numDisabledServers
@@ -706,15 +706,15 @@ class DistanceVectorRouting:
             except socket.error:
                 print('Connection to a server has failed')
 
-    def step(self, serverList):
+    def step(self):
          #B&R: added self
-        for server in serverList:
+        for server in self.serverList:
             if server.id == self.myServerId:
                  #B&R: added self
                 for neighbor, cost in server.neighborsIdAndCost.items():
                     ipAddressOfNeighbor = ""
                     portOfNeighbor = 0
-                    for s in serverList:
+                    for s in self.serverList:
                         if s.id == neighbor:
                             ipAddressOfNeighbor = s.ipAddress
                             portOfNeighbor = s.port
@@ -724,19 +724,19 @@ class DistanceVectorRouting:
                     except:
                         pass
                 break
-    def updateRoutingTable(self, serverList, nrt):
-        myOriginalRoutingTable = [[0 for i in range(len(serverList) + self.numDisabledServers)] for j in range(len(serverList) + self.numDisabledServers)]
+    def updateRoutingTable(self, nrt):
+        myOriginalRoutingTable = [[0 for i in range(len(self.serverList) + self.numDisabledServers)] for j in range(len(self.serverList) + self.numDisabledServers)]
         #B&R: added self to numDisabledServers
-        myNewRoutingTable = [[0 for i in range(len(serverList) + self.numDisabledServers)] for j in range(len(serverList) + self.numDisabledServers)]
+        myNewRoutingTable = [[0 for i in range(len(self.serverList) + self.numDisabledServers)] for j in range(len(self.serverList) + self.numDisabledServers)]
         #B&R: added self to numDisabledServers
         i = 0
-        for i in range(len(serverList)):
-            if serverList[i].getId() == self.myServerId:
+        for i in range(len(self.serverList)):
+            if self.serverList[i].getId() == self.myServerId:
                  #B&R: added self
-                for j in range(len(serverList[i].routingTable)):
-                    for k in range(len(serverList[i].routingTable[j])):
-                        itr = iter(serverList[i].neighborsIdAndCost.items())
-                        neighbors = [0 for l in range(len(serverList[i].neighborsIdAndCost))]
+                for j in range(len(self.serverList[i].routingTable)):
+                    for k in range(len(self.serverList[i].routingTable[j])):
+                        itr = iter(self.serverList[i].neighborsIdAndCost.items())
+                        neighbors = [0 for l in range(len(self.serverList[i].neighborsIdAndCost))]
                         x = 0
                         while itr:
                             try:
@@ -765,7 +765,7 @@ class DistanceVectorRouting:
                                     if j == k:
                                         pass
                                     else:
-                                        newCosts = [0 for a in range(len(serverList[i].neighborsIdAndCost))]
+                                        newCosts = [0 for a in range(len(self.serverList[i].neighborsIdAndCost))]
                                         for a in range(len(neighbors)):
                                             newCosts[a] = myNewRoutingTable[j][neighbors[a] - 1] + myNewRoutingTable[neighbors[a] - 1][k]
 
@@ -778,20 +778,20 @@ class DistanceVectorRouting:
                                         myNewRoutingTable[j][k] = minCost
 
                         didRoutingTableChange = False
-                        for s in range(len(serverList[i].routingTable)):
-                            for t in range(len(serverList[i].routingTable[s])):
+                        for s in range(len(self.serverList[i].routingTable)):
+                            for t in range(len(self.serverList[i].routingTable[s])):
                                 if myNewRoutingTable[s][t] != myOriginalRoutingTable[s][t]:
                                     didRoutingTableChange = True
                                     break
 
                         if didRoutingTableChange:
-                            serverList[i].routingTable = myNewRoutingTable
+                            self.serverList[i].routingTable = myNewRoutingTable
 
-                        return serverList
+                        return self.serverList
 
         class ScheduledTask(TimerTask):
             def run():
                 print("Routing update has been sent..\n")
-                step(serverList)
+                step(self.serverList)
 
-        return serverList
+        return self.serverList
