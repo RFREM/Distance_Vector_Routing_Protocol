@@ -7,6 +7,7 @@ import json
 
 
 class ServerInfo:
+
     def __init__(self):
         self.id = None
         self.ip_address = None
@@ -796,3 +797,11 @@ class DistanceVectorRouting:
         self.step(self.serverList)
 
         return self.serverList
+    
+if __name__ == '__main__':
+
+    print ("Hi Bob")
+    
+    bob = DistanceVectorRouting()
+    
+    bob.start_up()
