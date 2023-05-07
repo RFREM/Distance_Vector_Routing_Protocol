@@ -457,7 +457,8 @@ class DistanceVectorRouting:
         def createRoutingTable(self, serverList):
             #B&R: added self
             for i in range(len(serverList)):
-                serverList[i].routingTable = [[9999 for j in range(len(serverList)+numDisabledServers)] for k in range(len(serverList)+numDisabledServers)]
+                serverList[i].routingTable = [[9999 for j in range(len(serverList)+self.numDisabledServers)] for k in range(len(serverList)+self.numDisabledServers)]
+                #B&R: added self to numDisabledServers
                 if serverList[i].id == self.myServerId:
                     #B&R: added self
                     for j in range(len(serverList[i].routingTable)):
@@ -604,7 +605,8 @@ class DistanceVectorRouting:
 
                     serverList.pop(disable_server_id-1)
                     hashtag_next.pop(disable_server_id, None)
-                    numDisabledServers += 1
+                    self.numDisabledServers += 1
+                    #B&R: added self to numDisabledServers
                     num_packets += 1
 
                 elif operation == "crash":
@@ -628,7 +630,8 @@ class DistanceVectorRouting:
 
                     serverList.pop(crash_id-1)
                     hashtag_next.pop(crash_id, None)
-                    numDisabledServers
+                    self.numDisabledServers
+                    #B&R: added self to numDisabledServers
 
     def run(self):
          #B&R: added self
@@ -674,7 +677,8 @@ class DistanceVectorRouting:
                         disable_serevr_id = int(receivedMSG['server_id'])
                         serverList.pop(disable_serevr_id-1)
                         hashtagNext.pop(disable_serevr_id)
-                        numDisabledServers += 1
+                        self.numDisabledServers += 1
+                        #B&R: added self to numDisabledServers
                         numPackets += 1
                     elif messageType == 'crash':
                         # handle server crash
@@ -695,7 +699,8 @@ class DistanceVectorRouting:
                                 break
                         serverList.pop(crashId-1)
                         hashtagNext.pop(crashId)
-                        numDisabledServers += 1
+                        self.numDisabledServers += 1
+                        #B&R: added self to numDisabledServers
                         numPackets += 1
             except socket.error:
                 print('Connection to a server has failed')
@@ -719,9 +724,10 @@ class DistanceVectorRouting:
                         pass
                 break
     def updateRoutingTable(self, serverList, nrt):
-        myOriginalRoutingTable = [[0 for i in range(len(serverList) + numDisabledServers)] for j in range(len(serverList) + numDisabledServers)]
-        myNewRoutingTable = [[0 for i in range(len(serverList) + numDisabledServers)] for j in range(len(serverList) + numDisabledServers)]
-
+        myOriginalRoutingTable = [[0 for i in range(len(serverList) + self.numDisabledServers)] for j in range(len(serverList) + self.numDisabledServers)]
+        #B&R: added self to numDisabledServers
+        myNewRoutingTable = [[0 for i in range(len(serverList) + self.numDisabledServers)] for j in range(len(serverList) + self.numDisabledServers)]
+        #B&R: added self to numDisabledServers
         i = 0
         for i in range(len(serverList)):
             if serverList[i].getId() == self.myServerId:
