@@ -568,18 +568,18 @@ class DistanceVectorRouting:
                     server2 = int(received_msg["update_server_id_2"])
 
                     if new_cost.lower() == "inf":
-                        topFileRoutingTable[server2-1][server1-1] = 9999
+                        self.topFileRoutingTable[server2-1][server1-1] = 9999
                     else:
-                        topFileRoutingTable[server2-1][server1-1] = int(new_cost)
+                        self.topFileRoutingTable[server2-1][server1-1] = int(new_cost)
 
                     for server in serverList:
                         if server.id == self.myServerId:
                              #B&R: added self
-                            for i in range(len(topFileRoutingTable)):
-                                for j in range(len(topFileRoutingTable)):
-                                    server.routing_table[i][j] = topFileRoutingTable[i][j]
+                            for i in range(len(self.topFileRoutingTable)):
+                                for j in range(len(self.topFileRoutingTable)):
+                                    server.routing_table[i][j] = self.topFileRoutingTable[i][j]
                             break
-                    self.update_routing_table(serverList, topFileRoutingTable)
+                    self.update_routing_table(serverList, self.topFileRoutingTable)
 
                 elif operation == "disable":
                     disable_server_id = int(received_msg["disable_server_id"])
@@ -588,20 +588,20 @@ class DistanceVectorRouting:
                         print("Link to given server is closed...")
                         return
 
-                    for i in range(len(topFileRoutingTable)):
-                        for j in range(len(topFileRoutingTable[i])):
+                    for i in range(len(self.topFileRoutingTable)):
+                        for j in range(len(self.topFileRoutingTable[i])):
                             if j == disable_server_id - 1:
                                 continue
-                            topFileRoutingTable[j][disable_server_id-1] = 9999
-                            topFileRoutingTable[disable_server_id-1][j] = 9999 
+                            self.topFileRoutingTable[j][disable_server_id-1] = 9999
+                            self.topFileRoutingTable[disable_server_id-1][j] = 9999 
 
                     for server in serverList:
                         if server.id == self.myServerId:
                              #B&R: added self
                             server.neighbors_id_and_cost.pop(disable_server_id, None)
-                            for i in range(len(topFileRoutingTable)):
-                                for j in range(len(topFileRoutingTable[i])):
-                                    server.routing_table[i][j] = topFileRoutingTable[i][j]
+                            for i in range(len(self.topFileRoutingTable)):
+                                for j in range(len(self.topFileRoutingTable[i])):
+                                    server.routing_table[i][j] = self.topFileRoutingTable[i][j]
                             break
 
                     serverList.pop(disable_server_id-1)
@@ -613,20 +613,20 @@ class DistanceVectorRouting:
                 elif operation == "crash":
                     crash_id = int(received_msg["server_id"])
                     print(f"Server {crash_id} has crashed. Updating routing table..")
-                    for i in range(len(topFileRoutingTable)):
-                        for j in range(len(topFileRoutingTable[i])):
+                    for i in range(len(self.topFileRoutingTable)):
+                        for j in range(len(self.topFileRoutingTable[i])):
                             if j == crash_id - 1:
                                 continue
-                            topFileRoutingTable[j][crash_id-1] = 9999
-                            topFileRoutingTable[crash_id-1][j] = 9999
+                            self.topFileRoutingTable[j][crash_id-1] = 9999
+                            self.topFileRoutingTable[crash_id-1][j] = 9999
 
                     for server in serverList:
                         if server.id == self.myServerId:
                              #B&R: added self
                             server.neighbors_id_and_cost.pop(crash_id, None)
-                            for i in range(len(topFileRoutingTable)):
-                                for j in range(len(topFileRoutingTable[i])):
-                                    server.routing_table[i][j] = topFileRoutingTable[i][j]
+                            for i in range(len(self.topFileRoutingTable)):
+                                for j in range(len(self.topFileRoutingTable[i])):
+                                    server.routing_table[i][j] = self.topFileRoutingTable[i][j]
                             break
 
                     serverList.pop(crash_id-1)
@@ -659,15 +659,15 @@ class DistanceVectorRouting:
                     # update routing table
                     senderID = int(receivedMSG['sender_id'])
                     cost = int(receivedMSG['cost'])
-                    for i in range(len(topFileRoutingTable)):
+                    for i in range(len(self.topFileRoutingTable)):
                         if i != self.myServerId-1:
                              #B&R: added self
                             if i == senderID-1:
-                                topFileRoutingTable[i][senderID-1] = cost
+                                self.topFileRoutingTable[i][senderID-1] = cost
                             else:
-                                if (topFileRoutingTable[senderID-1][i] + cost) < topFileRoutingTable[self.myServerId-1][i]:
+                                if (self.topFileRoutingTable[senderID-1][i] + cost) < self.topFileRoutingTable[self.myServerId-1][i]:
                                      #B&R: added self
-                                    topFileRoutingTable[self.myServerId-1][i] = topFileRoutingTable[senderID-1][i] + cost
+                                    self.topFileRoutingTable[self.myServerId-1][i] = self.topFileRoutingTable[senderID-1][i] + cost
                                      #B&R: added self
                     # increment the number of received packets
                     numPackets += 1
@@ -685,18 +685,18 @@ class DistanceVectorRouting:
                         # handle server crash
                         crashId = int(receivedMSG['server_id'])
                         print('Server', crashId, 'has crashed. Updating routing table..')
-                        for i in range(len(topFileRoutingTable)):
+                        for i in range(len(self.topFileRoutingTable)):
                             if i == crashId-1:
                                 continue
-                            topFileRoutingTable[i][crashId-1] = 9999
-                            topFileRoutingTable[crashId-1][i] = 9999
+                            self.topFileRoutingTable[i][crashId-1] = 9999
+                            self.topFileRoutingTable[crashId-1][i] = 9999
                         for server in serverList:
                             if server.id == self.myServerId:
                                  #B&R: added self
                                 server.neighborsIdAndCost.pop(crashId)
-                                for i in range(len(topFileRoutingTable)):
-                                    for j in range(len(topFileRoutingTable[i])):
-                                        server.routingTable[i][j] = topFileRoutingTable[i][j]
+                                for i in range(len(self.topFileRoutingTable)):
+                                    for j in range(len(self.topFileRoutingTable[i])):
+                                        server.routingTable[i][j] = self.topFileRoutingTable[i][j]
                                 break
                         serverList.pop(crashId-1)
                         hashtagNext.pop(crashId)
