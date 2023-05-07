@@ -722,7 +722,7 @@ class DistanceVectorRouting:
                             portOfNeighbor = s.port
                             break
                     try:
-                        sendRoutingTableToNeighbor(ipAddressOfNeighbor, portOfNeighbor)
+                        self.sendRoutingTableToNeighbor(ipAddressOfNeighbor, portOfNeighbor)
                     except:
                         pass
                 break
