@@ -61,7 +61,8 @@ class DistanceVectorRouting:
         self.update_interval = 1000 # The interval in milliseconds between updates to routing table
         self.myServerId = 0 # The ID of this server
         #B&R: Changed my_server_id to myServerId
-        self.my_port = 0 # The port of this server
+        self.myPort = 0 # The port of this server
+        #B&R: my_Port myPort
         self.hashtagNext = {} # Dictionary for holding the next hop information
         #B&R: hashtag_next to hashtagNext
         self.my_ip = "" # The IP address of this server
@@ -236,13 +237,13 @@ class DistanceVectorRouting:
                     # if it matches with this server's ID
                     if serverList[i].id == self.myServerId:
                         # set its IP address and port
-                        self.my_port = serverList[i].port
+                        self.myPort = serverList[i].port
                         break
                 
                 # Get this server's IP address and create a server socket
                 self.my_ip = socket.gethostbyname(socket.gethostname())
                 self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.server_socket.bind((self.my_ip, self.my_port))
+                self.server_socket.bind((self.my_ip, self.myPort))
                 # Call the bootup function
                 self.bootup()
 
@@ -639,7 +640,7 @@ class DistanceVectorRouting:
          #B&R: added self
         # create a socket and bind it to the port
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind(('localhost', myPort))
+        sock.bind(('localhost', self.myPort))
 
         # loop until a termination signal is received
         while True:
