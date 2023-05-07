@@ -85,6 +85,45 @@ class DistanceVectorRouting:
 
             # If the command is "server", set up the server and routing table 
             # from the topology file and start the update timer
+
+            if command == "1":
+
+                line = fr"server -t topfile.txt -i 100"
+
+                command_split = line.split(" ")
+
+                self.update_interval = int(command_split[4]) # Set the update interval
+
+                # Read the topology file and set up the routing table
+                self.serverList = self.read_top_file(command_split[2], self.serverList)
+                self.serverList = self.createRoutingTable(self.serverList)
+
+                self.update_interval = self.update_interval * 1000
+                
+                # Java code:
+                # Timer timer = new Timer();
+                # ScheduledTask st = new ScheduledTask();
+                # timer.schedule(st, updateInterval, updateInterval);
+
+                # Convert the update interval to milliseconds and start the update timer
+                # not sure ? how to convert this part to python
+                timer = threading.Timer()
+                st = self.runScheduledTask()
+                timer.schedule(st, self.update_interval, self.update_interval)
+
+                # Set up the topFileRoutingTable
+                self.topFileRoutingTable = [[0 for i in range(len(self.serverList) + self.numDisabledServers)] for j in range(len(self.serverList) + self.numDisabledServers)]
+
+                for i in range(len(self.serverList)):
+                    if self.serverList[i].id == self.myServerId:
+                        for s in range(len(self.serverList[i].routing_table)):
+                            for t in range(len(self.serverList[i].routing_table[s])):
+                                self.topFileRoutingTable[s][t] = self.serverList[i].routing_table[s][t]
+                        break
+
+                print(f"{command} SUCCESS\n")
+
+
             if command == "server": 
                 try:
                     self.update_interval = int(command_split[4]) # Set the update interval
@@ -94,7 +133,7 @@ class DistanceVectorRouting:
                 
                 # Read the topology file and set up the routing table
                 self.serverList = self.read_top_file(command_split[2], self.serverList)
-                self.serverList = self.create_routing_table(self.serverList)
+                self.serverList = self.createRoutingTable(self.serverList)
 
                 self.update_interval = self.update_interval * 1000
                 
@@ -175,8 +214,11 @@ class DistanceVectorRouting:
 
     # This function reads a topology file which contains information about the servers in the network and their connections
     def read_top_file(self, file_name, serverList):
+        
         total_servers_count = 0 
+        
         num_neighbors = 0
+        
         new_neighbor_id_and_cost = {}
 
         try:
@@ -204,6 +246,9 @@ class DistanceVectorRouting:
                     line = my_reader.readline()
                     if line:
                         command_split = line.split(" ")
+
+                        command_split = line.split()
+
                         if len(command_split) != 3:
                             raise Exception("3:Topology File Not Correctly Formatted!")
                         else:
@@ -221,7 +266,11 @@ class DistanceVectorRouting:
                     line = my_reader.readline()
                     if line:
                         command_split = line.split(" ")
+
+                        command_split = line.split()
+
                         if len(command_split) != 3:
+
                             raise Exception("5: Topology File Not Correctly Formatted!")
                         else:
                             # set my server ID to first item in line
@@ -244,7 +293,7 @@ class DistanceVectorRouting:
                 # Get this server's IP address and create a server socket
                 self.my_ip = socket.gethostbyname(socket.gethostname())
                 self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.server_socket.bind((self.my_ip, self.myPort))
+                self.server_socket.bind((self.my_ip, int(self.myPort)))
                 # Call the bootup function
                 self.bootup()
 
