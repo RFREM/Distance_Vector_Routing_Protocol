@@ -105,7 +105,7 @@ class DistanceVectorRouting:
                 # Convert the update interval to milliseconds and start the update timer
                 # not sure ? how to convert this part to python
                 timer = threading.Timer()
-                st = ScheduledTask()
+                st = self.runScheduledTask()
                 timer.schedule(st, self.update_interval, self.update_interval)
 
                 # Set up the topFileRoutingTable
@@ -790,10 +790,9 @@ class DistanceVectorRouting:
                             self.serverList[i].routingTable = myNewRoutingTable
 
                         return self.serverList
-
-        class ScheduledTask(TimerTask):
-            def run():
-                print("Routing update has been sent..\n")
-                step(self.serverList)
+                    
+    def runScheduledTask(self):
+        print("Routing update has been sent..\n")
+        self.step(self.serverList)
 
         return self.serverList
