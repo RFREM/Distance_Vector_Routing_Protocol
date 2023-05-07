@@ -4,7 +4,7 @@ import time
 from typing import List, Dict
 import threading
 import json
-
+from threading import Timer
 
 class ServerInfo:
 
@@ -12,7 +12,7 @@ class ServerInfo:
         self.id = None
         self.ip_address = None
         self.port = None
-        self.neighbors_id_and_cost = None
+        self.neighborsIdAndCost = None
         self.no_of_packets_received = None
         self.routing_table = None
     
@@ -34,11 +34,11 @@ class ServerInfo:
     def get_port(self):
         return self.port
 
-    def set_neighbors_id_and_cost(self, neighbors_id_and_cost):
-        self.neighbors_id_and_cost = neighbors_id_and_cost
+    def set_neighborsIdAndCost(self, neighborsIdAndCost):
+        self.neighborsIdAndCost = neighborsIdAndCost
     
-    def get_neighbors_id_and_cost(self):
-        return self.neighbors_id_and_cost
+    def get_neighborsIdAndCost(self):
+        return self.neighborsIdAndCost
 
     def set_no_of_packets_received(self, no_of_packets_received):
         self.no_of_packets_received = no_of_packets_received
@@ -96,7 +96,7 @@ class DistanceVectorRouting:
 
                 # Read the topology file and set up the routing table
                 self.serverList = self.read_top_file(command_split[2], self.serverList)
-                self.serverList = self.createRoutingTable(self.serverList)
+                self.serverList = self.createRoutingTable()
 
                 self.update_interval = self.update_interval * 1000
                 
@@ -107,8 +107,11 @@ class DistanceVectorRouting:
 
                 # Convert the update interval to milliseconds and start the update timer
                 # not sure ? how to convert this part to python
-                timer = threading.Timer()
-                st = self.runScheduledTask()
+
+                timer = Timer()
+                
+                st = self.runScheduledTask(self.update_interval)
+                
                 timer.schedule(st, self.update_interval, self.update_interval)
 
                 # Set up the topFileRoutingTable
@@ -305,12 +308,12 @@ class DistanceVectorRouting:
             # If the server is the current server
             if serverList[i].get_id() == self.myServerId:
                 # Set the neighbors of this server with the new neighbor information
-                serverList[i].set_neighbors_id_and_cost(new_neighbor_id_and_cost)
+                serverList[i].set_neighborsIdAndCost(new_neighbor_id_and_cost)
             else:
                 # Otherwise, set the neighbors of this server to an empty hash map
                 empty_hash_map = {}
                 empty_hash_map[0] = 0
-                serverList[i].set_neighbors_id_and_cost(empty_hash_map)
+                serverList[i].set_neighborsIdAndCost(empty_hash_map)
         
         # Return the updated server list
         return serverList
@@ -393,7 +396,7 @@ class DistanceVectorRouting:
         # Update the routing table and remove the disabled server from the neighbor's list        
         for x in range(len(self.serverList)):
             if self.serverList[x].id == self.myServerId:
-                self.serverList[x].neighbors_id_and_cost.pop(dsid, None)
+                self.serverList[x].neighborsIdAndCost.pop(dsid, None)
                 for i in range(len(self.topFileRoutingTable)):
                     for j in range(len(self.topFileRoutingTable[i])):
                         self.serverList[x].routing_table[i][j] = self.topFileRoutingTable[i][j]
@@ -525,7 +528,7 @@ class DistanceVectorRouting:
                     self.serverList[i].routingTable[j][j] = 9999
 
         # iterate through id and costs of neighboring servers to assign their respective link costs to current server
-        for i in range(len(self, self.serverList)):
+        for i in range(len(self.serverList)):
                 #B&R: added self
             if self.serverList[i].id == self.myServerId:
                     #B&R: added self
@@ -650,7 +653,7 @@ class DistanceVectorRouting:
                     for server in self.serverList:
                         if server.id == self.myServerId:
                              #B&R: added self
-                            server.neighbors_id_and_cost.pop(disable_server_id, None)
+                            server.neighborsIdAndCost.pop(disable_server_id, None)
                             for i in range(len(self.topFileRoutingTable)):
                                 for j in range(len(self.topFileRoutingTable[i])):
                                     server.routing_table[i][j] = self.topFileRoutingTable[i][j]
@@ -675,7 +678,7 @@ class DistanceVectorRouting:
                     for server in self.serverList:
                         if server.id == self.myServerId:
                              #B&R: added self
-                            server.neighbors_id_and_cost.pop(crash_id, None)
+                            server.neighborsIdAndCost.pop(crash_id, None)
                             for i in range(len(self.topFileRoutingTable)):
                                 for j in range(len(self.topFileRoutingTable[i])):
                                     server.routing_table[i][j] = self.topFileRoutingTable[i][j]
