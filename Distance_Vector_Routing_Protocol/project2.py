@@ -619,9 +619,9 @@ if __name__ == "__main__":
     DistanceVectorRouting.start_up(sys.argv)
 
 def handleStep(json):
-    numDisableServers = 0
-    myServerid = "some_id"
-    newRT = [[0 for i in range(len(serverList) + numDisableServers)] for j in range(len(serverList) + numDisabledServers)]
+    numDisableServers = 0 # define numDisableServers
+    myServerid = "some_id" # define myServerid
+    newRT = [[0 for i in range(len(serverList) + numDisableServers)] for j in range(len(serverList) + numDisableServers)]
     arr = json.getJSONArray("rt")
     for i in range(len(arr)):
         innerArr = arr.get(i)
@@ -633,6 +633,10 @@ def handleStep(json):
     serverList = updateRoutingTable(serverList, newRT)
     return
 
+
+# define serverList and myserverId before the function
+serverList = [...] # list of servers
+myserverId = ...   # id of current server
 def SendCrash():
     infoObj = {
         "operation": "crash",
@@ -675,6 +679,8 @@ def sendRoutingTableToNeighbor(self, ipAddressOfNeighbor, portOfNeighbor):
         print("Connection failed...")
         print(e)
 
+
+    numDisabledServers = 0
     def createRoutingTable(serverList):
         for i in range(len(serverList)):
             serverList[i].routingTable = [[9999 for j in range(len(serverList)+numDisabledServers)] for k in range(len(serverList)+numDisabledServers)]
